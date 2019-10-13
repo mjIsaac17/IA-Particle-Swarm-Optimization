@@ -7,8 +7,15 @@
 from mpl_toolkits.mplot3d import Axes3D
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
+import random as ran
 import numpy as np
 import math 
+
+#Define the range of the values by the objective function 
+#Ackley function
+MAX_R_ACKLEY = 3
+MIN_R_ACKLEY = -3
+MAX_V = 10
 """
 COUNT = 100
 fig, ax = plt.subplots()
@@ -74,8 +81,13 @@ def fn_plot(array_x, array_y, array_energy, title):
 
 class Particle:
     def __init__(self):
-        self.vectorX = [] # stores its current position
-        self.vectorpBest = [] # stores the position of the best solution found so far
-        self.vectorV = [] # stores the gradient (direction) to move
-        self.xFitness = 0 # stores the current fitness of the particle
-        self.pBestFitness = 0 #stores the best solution found (vectorpBest)
+        self.vectorX = []
+        self.vectorpBest = []
+        self.vectorX.append(ran.uniform(MIN_R_ACKLEY, MAX_R_ACKLEY)) # current X position
+        self.vectorX.append(ran.uniform(MIN_R_ACKLEY, MAX_R_ACKLEY)) # current Y position
+        self.vectorpBest.append(self.vectorX[0]) # stores the position of the best solution found so far 
+        self.vectorpBest.append(self.vectorX[1])
+        self.xFitness = fn_ackley_function(self.vectorX[0], self.vectorX[1])  # stores the current fitness of the particle
+        self.pBestFitness = -1 #stores the best solution found (vectorpBest)
+        self.vectorV = ran.uniform((-1*MAX_V), MAX_V) # stores the gradient (direction) to move
+
