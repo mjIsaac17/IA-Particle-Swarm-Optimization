@@ -69,5 +69,13 @@ def fn_plot(array_x, array_y, array_energy, title):
     plt.show()
     
 
-fn_llenarVectores()
-fn_plot(vX, vY, vZ, 'prueba')
+#fn_llenarVectores()
+#fn_plot(vX, vY, vZ, 'prueba')
+
+class Particle:
+    def __init__(self):
+        self.vectorX = [] # stores its current position
+        self.vectorpBest = [] # stores the position of the best solution found so far
+        self.vectorV = [] # stores the gradient (direction) to move
+        self.xFitness = 0 # stores the current fitness of the particle
+        self.pBestFitness = 0 #stores the best solution found (vectorpBest)
