@@ -15,7 +15,7 @@ import math
 #Ackley function
 MAX_R_ACKLEY = 3
 MIN_R_ACKLEY = -3
-MAX_V = 1.5
+MAX_V = 0.8
 ACKLEY_SOLUTION = 0
 
 # C1 = the acceleration factor related to personal best
@@ -30,7 +30,7 @@ V_GLOBAL_BEST = []
 PARTICLES = 100
 
 # Number of iterations
-ITE = 100
+ITE = 300
 """
 COUNT = 100
 fig, ax = plt.subplots()
@@ -109,11 +109,52 @@ class Particle:
     def setNextVelocity(self):
         r1 = ran.random()
         r2 = ran.random()
-        self.velocity += C1*r1*((self.vectorpBest[0] - self.vectorX[0]) + (self.vectorpBest[1] - self.vectorX[1])) + C2*r2*((V_GLOBAL_BEST[0] - self.vectorX[0]) + (V_GLOBAL_BEST[1] - self.vectorX[1]))
+        self.velocity = self.velocity*0.4 + C1*r1*((self.vectorpBest[0] - self.vectorX[0]) + (self.vectorpBest[1] - self.vectorX[1])) + C2*r2*((V_GLOBAL_BEST[0] - self.vectorX[0]) + (V_GLOBAL_BEST[1] - self.vectorX[1]))
 
     def setNextPosition(self):
         self.vectorX[0] += self.velocity
         self.vectorX[1] += self.velocity
 
-    def setFitness(self):
-        self.xFitness = fn_ackley_function(self.vectorX[0], self.vectorX[1])
+    def setFitness(self, newFitness):
+        self.xFitness = newFitness
+    
+    def setBestFitness(self, newBestFitness):
+        self.pBestFitness = newBestFitness
+
+
+def main_PSO_ackley():
+    particles = []
+    #initialize the reference particle
+    particles.append(Particle())
+    bestAbsFitness = math.fabs(particles[0].xFitness) 
+    V_GLOBAL_BEST.append(particles[0].vectorpBest[0])
+    V_GLOBAL_BEST.append(particles[0].vectorpBest[1])
+    #initialize the particles
+    for i in range(1, PARTICLES):     
+        particles.append(Particle())  
+        print(i)
+        if(math.fabs(particles[i].xFitness) < bestAbsFitness):
+            bestAbsFitness = math.fabs(particles[i].xFitness)
+            V_GLOBAL_BEST.append(particles[i].vectorpBest[0])
+            V_GLOBAL_BEST.append(particles[i].vectorpBest[1])
+
+    ite = 0
+    while(ite < ITE):
+        for i in range(PARTICLES):
+            particles[i].setNextVelocity()
+            particles[i].setNextPosition()
+            particles[i].setFitness(fn_ackley_function(particles[i].vectorX[0], particles[i].vectorX[1]))
+            # store the best fitness and position
+            newAbsFitness = math.fabs(fn_ackley_function(particles[i].vectorX[0], particles[i].vectorX[1]))
+            if(newAbsFitness < math.fabs(particles[i].pBestFitness)):
+                particles[i].setBestFitness(fn_ackley_function(particles[i].vectorX[0], particles[i].vectorX[1]))
+                particles[i].vectorpBest[0] = particles[i].vectorX[0]
+                particles[i].vectorpBest[1] = particles[i].vectorX[1]
+        ite += 1
+    print("Best solution: ", fn_ackley_function(V_GLOBAL_BEST[0], V_GLOBAL_BEST[1]))
+    print("X: ", V_GLOBAL_BEST[0])
+    print("Y: ", V_GLOBAL_BEST[1])
+
+main_PSO_ackley()
+
+#print("FN: ", fn_ackley_function(0.26663023740766967,1.3557306612252518))
