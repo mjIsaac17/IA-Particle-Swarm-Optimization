@@ -15,7 +15,16 @@ import math
 #Ackley function
 MAX_R_ACKLEY = 3
 MIN_R_ACKLEY = -3
-MAX_V = 10
+MAX_V = 1.5
+
+# C1 = the acceleration factor related to personal best
+# C2 = the acceleration factor related to global best
+C1 = 0.5
+C2 = 1.5
+
+# Store the best position found
+V_GLOBAL_BEST = []
+
 """
 COUNT = 100
 fig, ax = plt.subplots()
@@ -88,6 +97,16 @@ class Particle:
         self.vectorpBest.append(self.vectorX[0]) # stores the position of the best solution found so far 
         self.vectorpBest.append(self.vectorX[1])
         self.xFitness = fn_ackley_function(self.vectorX[0], self.vectorX[1])  # stores the current fitness of the particle
-        self.pBestFitness = -1 #stores the best solution found (vectorpBest)
+        self.pBestFitness = self.xFitness
         self.vectorV = ran.uniform((-1*MAX_V), MAX_V) # stores the gradient (direction) to move
 
+    #def evaluateNewPosition(self, new_xPosition, new_yPosition):
+        #if()
+    def nextVelocity(self):
+        r1 = ran.random()
+        r2 = ran.random()
+        self.vectorV += C1*r1*((self.vectorpBest[0] - self.vectorX[0]) + (self.vectorpBest[1] - self.vectorX[1])) + C2*r2*((V_GLOBAL_BEST[0] - self.vectorX[0]) + (V_GLOBAL_BEST[1] - self.vectorX[1]))
+
+    def nextPosition(self):
+        self.vectorX[0] += self.vectorV
+        self.vectorX[1] += self.vectorV
