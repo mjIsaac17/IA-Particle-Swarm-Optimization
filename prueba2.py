@@ -74,7 +74,7 @@ vY = []
 vZ = []
 rango = 3
 salto = 0.2
-MODELO = 1
+MODELO = 0
 band = 0
 
 def fn_llenarVectores():
