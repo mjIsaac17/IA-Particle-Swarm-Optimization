@@ -1,6 +1,8 @@
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
+from mpl_toolkits.mplot3d import Axes3D 
 import numpy as np
+from numpy.random import normal as normal
 import random as ran
 import math 
 
@@ -20,43 +22,13 @@ C2 = 2
 V_GLOBAL_BEST = []
 
 # Amount of particles
-PARTICLES = 10
+PARTICLES = 100
 
 # Number of iterations
-ITE = 200
+ITE = 50
 W = [0.9]
 particles = []
-def _update_plot(j, fig, scat): ##FALTA ACTUALIZAR LA MEJOR POSICION
-    ite = 0
-    part = []
-    #while(ite < ITE):
-    absBestFitness = math.fabs(V_GLOBAL_BEST[2])
-    for i in range(PARTICLES):
-        particles[i].setNextVelocity()
-        particles[i].setNextPosition()
-        #print("particle %d, posX: %f, posY: %f, velX: %f, velY: %f" %(i, particles[i].vectorX[0], particles[i].vectorX[1], particles[i].velocityX, particles[i].velocityY))
-        particles[i].setFitness(fn_ackley_function(particles[i].vectorX[0], particles[i].vectorX[1]))
-        # store the best fitness and position
-        newAbsFitness = math.fabs(fn_ackley_function(particles[i].vectorX[0], particles[i].vectorX[1]))
-        if(newAbsFitness < math.fabs(particles[i].pBestFitness)):
-            particles[i].setBestFitness(fn_ackley_function(particles[i].vectorX[0], particles[i].vectorX[1]))
-            particles[i].vectorpBest[0] = particles[i].vectorX[0]
-            particles[i].vectorpBest[1] = particles[i].vectorX[1]
-        if(newAbsFitness < absBestFitness):
-            V_GLOBAL_BEST[0] = particles[i].vectorpBest[0]
-            V_GLOBAL_BEST[1] = particles[i].vectorpBest[1]
-            V_GLOBAL_BEST[2] = fn_ackley_function(V_GLOBAL_BEST[0], V_GLOBAL_BEST[1]) 
-            absBestFitness = math.fabs(V_GLOBAL_BEST[2])
-        part.append([particles[i].vectorX[0], particles[i].vectorX[1]])
-        #ite += 1
-    #print("BEST X: %f, BEST Y: %f" %{V_GLOBAL_BEST[0], V_GLOBAL_BEST[1]})
-    #print("______________________________________")
-    W[0] -= 0.01
-    scat.set_offsets(part)
-    #print('Frames: %d', %i) # For < Python3 
-    #print('Frames: {}'.format(j)) # For Python3
-    
-    return scat
+
 
 
 def fn_ackley_function(x,y):
@@ -77,19 +49,15 @@ class Particle:
         self.velocityY = ran.uniform((-1*MAX_V), MAX_V) 
 
     def setNextVelocity(self):
-        #print("BEST X: ", V_GLOBAL_BEST[0], "BEST Y: ", V_GLOBAL_BEST[1])
         r1 = ran.random()
         r2 = ran.random()
         cognitivoX = C1*r1*(self.vectorpBest[0] - self.vectorX[0])
         cognitivoY = C1*r1*(self.vectorpBest[1] - self.vectorX[1])
         socialX = C2*r2*(V_GLOBAL_BEST[0] - self.vectorX[0])
         socialY = C2*r2*(V_GLOBAL_BEST[1] - self.vectorX[1])
-        #print("COG: R1(%f)*(PBX(%f) + PBY(%f) - PX(%f) - PX(%f)) = %f" %(r1, self.vectorpBest[0], self.vectorpBest[1] , self.vectorX[0], self.vectorX[1], cognitivo))
-        #print("SOC: R2(%f)*(GBX(%f) + GBY(%f) - PX(%f) - PX(%f)) = %f" %(r2, V_GLOBAL_BEST[0], V_GLOBAL_BEST[1] , self.vectorX[0], self.vectorX[1], social))
-        #print("NEW VEL: VEL(%f)*0.5 + COG(%f) + SOC(%f) = %f / NEWX: %f, NEWY:%f" %(self.velocity, cognitivo, social, self.velocity*0.5+cognitivo+social, self.vectorX[0]+self.velocity*0.5+cognitivo+social,self.vectorX[1]+self.velocity*0.5+cognitivo+social))
-        #self.velocity = self.velocity*0.4 + C1*r1*((self.vectorpBest[0] - self.vectorX[0]) - (self.vectorpBest[1] - self.vectorX[1])) + C2*r2*((V_GLOBAL_BEST[0] - self.vectorX[0]) - (V_GLOBAL_BEST[1] - self.vectorX[1]))
         self.velocityX = W[0] * self.velocityX + (cognitivoX + socialX)
         self.velocityY = W[0] * self.velocityY + (cognitivoY + socialY)
+
     def setNextPosition(self):
         self.vectorX[0] += self.velocityX
         self.vectorX[1] += self.velocityY
@@ -101,24 +69,84 @@ class Particle:
         self.pBestFitness = newBestFitness
 
 
-def main_PSO_ackley():
-    
-    #initialize the reference particle
+vX = []
+vY = []
+vZ = []
+rango = 3
+salto = 0.2
+MODELO = 1
+band = 0
+
+def fn_llenarVectores():
+    x = -1 * rango
+    while x < rango:
+        y=-1 * rango
+        while y < rango:
+            vZ.append(fn_ackley_function(x,y))        
+            vX.append(x)
+            vY.append(y)
+            y += salto
+        x+= salto
+    band = 1
+
+#Plot the results
+def fn_plot(array_x, array_y, array_energy, title):   
+    fig = plt.figure()
+    ax = fig.add_subplot(111,projection='3d')
+    ax.set_title(title)
+    ax.set_xlabel('X')
+    ax.set_ylabel('Y')
+    ax.set_zlabel('Z') 
+    ax.plot_trisurf(array_x, array_y,array_energy, cmap=plt.cm.Spectral, antialiased=False)
+
+
+### INICIO
+def ackley():
     particles.append(Particle())
     bestAbsFitness = math.fabs(particles[0].xFitness) 
     V_GLOBAL_BEST.append(particles[0].vectorpBest[0])
     V_GLOBAL_BEST.append(particles[0].vectorpBest[1])
+    V_GLOBAL_BEST.append(fn_ackley_function(V_GLOBAL_BEST[0], V_GLOBAL_BEST[1]))
+
     #initialize the particles
     for i in range(1, PARTICLES):     
         particles.append(Particle())  
-        print(i)
         if(math.fabs(particles[i].xFitness) < bestAbsFitness):
             bestAbsFitness = math.fabs(particles[i].xFitness)
             V_GLOBAL_BEST[0] = particles[i].vectorpBest[0]
             V_GLOBAL_BEST[1] = particles[i].vectorpBest[1]
-    ite = 0
-    
-    while(ite < ITE):
+            V_GLOBAL_BEST[2] = fn_ackley_function(V_GLOBAL_BEST[0], V_GLOBAL_BEST[1]) 
+    x = []
+    y = []
+    z = []
+    for i in range(PARTICLES):
+        x.append(particles[i].vectorX[0])
+        y.append(particles[i].vectorX[1])
+        z.append(particles[i].xFitness)
+    #ax = fig.add_subplot(111)
+    fig = plt.figure()
+    ax = fig.add_subplot(111, projection='3d')
+    sct, = ax.plot([], [], [], "o", markersize=2)
+    ax.grid(True, linestyle = '-', color = '0.75')
+    ax.set_xlim([-5, 5])
+    ax.set_ylim([-5, 5])
+    ax.set_zlim([-1, 8])
+
+        
+    if(MODELO):
+        fn_llenarVectores()
+        ax.plot_trisurf(vX, vY,vZ, cmap=plt.cm.Spectral, antialiased=False)
+    #fn_plot(vX, vY, vZ, "i")
+    #scat = plt.scatter(x, y, z)
+    #scat.set_alpha(0.8)
+    def _update_plot(j): 
+        plt.title("Iteraciones: %d / Mejor Fitness: %f" %(j, V_GLOBAL_BEST[2])) 
+        if(j == ITE):
+            anim._stop()
+        partX = []
+        partY = []
+        partZ = []
+        absBestFitness = math.fabs(V_GLOBAL_BEST[2])
         for i in range(PARTICLES):
             particles[i].setNextVelocity()
             particles[i].setNextPosition()
@@ -129,46 +157,47 @@ def main_PSO_ackley():
                 particles[i].setBestFitness(fn_ackley_function(particles[i].vectorX[0], particles[i].vectorX[1]))
                 particles[i].vectorpBest[0] = particles[i].vectorX[0]
                 particles[i].vectorpBest[1] = particles[i].vectorX[1]
-        ite += 1
-    print("Best solution: ", fn_ackley_function(V_GLOBAL_BEST[0], V_GLOBAL_BEST[1]))
-    print("X: ", V_GLOBAL_BEST[0])
-    print("Y: ", V_GLOBAL_BEST[1])
+            if(newAbsFitness < absBestFitness):
+                V_GLOBAL_BEST[0] = particles[i].vectorpBest[0]
+                V_GLOBAL_BEST[1] = particles[i].vectorpBest[1]
+                V_GLOBAL_BEST[2] = fn_ackley_function(V_GLOBAL_BEST[0], V_GLOBAL_BEST[1]) 
+                absBestFitness = math.fabs(V_GLOBAL_BEST[2])
+            partX.append(particles[i].vectorX[0])
+            partY.append(particles[i].vectorX[1])
+            partZ.append(particles[i].xFitness)
+        sct.set_data(partX, partY)
+        sct.set_3d_properties(partZ)
+        
+        W[0] -= 0.01
+    #scat.set_offsets(part)
+    anim = animation.FuncAnimation(fig, _update_plot, interval = 80)
 
+    plt.show()
 
+ackley()
+def grafica():
 
-particles.append(Particle())
-bestAbsFitness = math.fabs(particles[0].xFitness) 
-V_GLOBAL_BEST.append(particles[0].vectorpBest[0])
-V_GLOBAL_BEST.append(particles[0].vectorpBest[1])
-V_GLOBAL_BEST.append(fn_ackley_function(V_GLOBAL_BEST[0], V_GLOBAL_BEST[1]))
-tuplaParticles = []
-#initialize the particles
-for i in range(1, PARTICLES):     
-    particles.append(Particle())  
-    #print(i)
-    if(math.fabs(particles[i].xFitness) < bestAbsFitness):
-        bestAbsFitness = math.fabs(particles[i].xFitness)
-        V_GLOBAL_BEST[0] = particles[i].vectorpBest[0]
-        V_GLOBAL_BEST[1] = particles[i].vectorpBest[1]
-        V_GLOBAL_BEST[2] = fn_ackley_function(V_GLOBAL_BEST[0], V_GLOBAL_BEST[1])
- #   tuplaParticles.append([particles[i].vectorX[0], particles[i].vectorX[1]])
-#part = (tuplaParticles)
+    nfr = 50 # Number of frames
+    fps = 10 # Frame per sec
+    xs = []
+    ys = []
+    zs = []
+    ss = np.arange(1,nfr,0.5)
+    for s in ss:
+        xs.append(normal(0,s,200))
+        ys.append(normal(50,s,200))
+        zs.append(normal(50,s,200))
 
-fig = plt.figure()
-x = []
-y = []
-for i in range(PARTICLES):
-    x.append(particles[i].vectorX[0])
-    y.append(particles[i].vectorX[1])
+    fig = plt.figure()
+    ax = fig.add_subplot(111, projection='3d')
+    sct, = ax.plot([], [], [], "o", markersize=2)
+    def update(ifrm, xa, ya, za):
+        sct.set_data(xa[ifrm], ya[ifrm])
+        sct.set_3d_properties(za[ifrm])
+    print(nfr)
+    ax.set_xlim(0,100)
+    ax.set_ylim(0,100)
+    ax.set_zlim(0,100)
+    ani = animation.FuncAnimation(fig, update, nfr, fargs=(xs,ys,zs), interval=1000/fps)
+    plt.show()
 
-ax = fig.add_subplot(111)
-ax.grid(True, linestyle = '-', color = '0.75')
-ax.set_xlim([-3, 3])
-ax.set_ylim([-3, 3])
-
-scat = plt.scatter(x, y, c=x)
-scat.set_alpha(0.8)
-
-anim = animation.FuncAnimation(fig, _update_plot, fargs = (fig, scat),interval = 100)
-
-plt.show()
