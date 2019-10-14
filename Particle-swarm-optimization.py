@@ -10,8 +10,9 @@ import math
 #Ackley function
 MAX_R_ACKLEY = 3
 MIN_R_ACKLEY = -3
+
+# Max initial particle velocity
 MAX_V = 2
-ACKLEY_SOLUTION = 0
 
 # C1 = the acceleration factor related to personal best
 # C2 = the acceleration factor related to global best
@@ -26,8 +27,16 @@ PARTICLES = 100
 
 # Number of iterations
 ITE = 50
+
+# Initial weight
 W = [0.9]
-particles = []
+W_REDUCTION = 0.01 # Reduction factor to each iteration 
+
+# Flag to know if the model of the objective function is plotted
+MODEL = 0
+
+# Value between points of the model, if its lower = more quality
+MODEL_QUALITY = 0.3
 
 
 
@@ -69,39 +78,25 @@ class Particle:
         self.pBestFitness = newBestFitness
 
 
-vX = []
-vY = []
-vZ = []
-rango = 3
-salto = 0.2
-MODELO = 0
-band = 0
-
-def fn_llenarVectores():
-    x = -1 * rango
-    while x < rango:
-        y=-1 * rango
-        while y < rango:
+def fn_createModelAckley():
+    vX, vY, vZ = []
+    x = -1 * MAX_R_ACKLEY
+    while x < MAX_R_ACKLEY:
+        y=-1 * MAX_R_ACKLEY
+        while y < MAX_R_ACKLEY:
             vZ.append(fn_ackley_function(x,y))        
             vX.append(x)
             vY.append(y)
-            y += salto
-        x+= salto
-    band = 1
-
-#Plot the results
-def fn_plot(array_x, array_y, array_energy, title):   
-    fig = plt.figure()
-    ax = fig.add_subplot(111,projection='3d')
-    ax.set_title(title)
-    ax.set_xlabel('X')
-    ax.set_ylabel('Y')
-    ax.set_zlabel('Z') 
-    ax.plot_trisurf(array_x, array_y,array_energy, cmap=plt.cm.Spectral, antialiased=False)
+            y += MODEL_QUALITY
+        x+= MODEL_QUALITY
+    return vX, vY, vZ
 
 
-### INICIO
-def ackley():
+def main_PSO_ackley():
+    particles = []
+    modelVX = []
+    modelVY = []
+    modelVZ = []
     particles.append(Particle())
     bestAbsFitness = math.fabs(particles[0].xFitness) 
     V_GLOBAL_BEST.append(particles[0].vectorpBest[0])
@@ -130,15 +125,11 @@ def ackley():
     ax.grid(True, linestyle = '-', color = '0.75')
     ax.set_xlim([-5, 5])
     ax.set_ylim([-5, 5])
-    ax.set_zlim([-1, 8])
-
-        
-    if(MODELO):
-        fn_llenarVectores()
-        ax.plot_trisurf(vX, vY,vZ, cmap=plt.cm.Spectral, antialiased=False)
-    #fn_plot(vX, vY, vZ, "i")
-    #scat = plt.scatter(x, y, z)
-    #scat.set_alpha(0.8)
+    ax.set_zlim([-1, 8])    
+    if(MODEL):
+        modelVX, modelVY, modelVZ = fn_createModelAckley()
+        ax.plot_trisurf(modelVX, modelVY, modelVZ, cmap=plt.cm.Spectral, antialiased=False)
+    
     def _update_plot(j): 
         plt.title("Iteraciones: %d / Mejor Fitness: %f" %(j, V_GLOBAL_BEST[2])) 
         if(j == ITE):
@@ -167,37 +158,9 @@ def ackley():
             partZ.append(particles[i].xFitness)
         sct.set_data(partX, partY)
         sct.set_3d_properties(partZ)
-        
-        W[0] -= 0.01
-    #scat.set_offsets(part)
+        W[0] -= W_REDUCTION
     anim = animation.FuncAnimation(fig, _update_plot, interval = 80)
-
     plt.show()
 
-ackley()
-def grafica():
-
-    nfr = 50 # Number of frames
-    fps = 10 # Frame per sec
-    xs = []
-    ys = []
-    zs = []
-    ss = np.arange(1,nfr,0.5)
-    for s in ss:
-        xs.append(normal(0,s,200))
-        ys.append(normal(50,s,200))
-        zs.append(normal(50,s,200))
-
-    fig = plt.figure()
-    ax = fig.add_subplot(111, projection='3d')
-    sct, = ax.plot([], [], [], "o", markersize=2)
-    def update(ifrm, xa, ya, za):
-        sct.set_data(xa[ifrm], ya[ifrm])
-        sct.set_3d_properties(za[ifrm])
-    print(nfr)
-    ax.set_xlim(0,100)
-    ax.set_ylim(0,100)
-    ax.set_zlim(0,100)
-    ani = animation.FuncAnimation(fig, update, nfr, fargs=(xs,ys,zs), interval=1000/fps)
-    plt.show()
+main_PSO_ackley()
 
