@@ -31,8 +31,8 @@ PARTICLES = 100
 
 # Number of iterations
 ITE = 300
-"""
-COUNT = 100
+
+"""COUNT = 100
 fig, ax = plt.subplots()
 line, = ax.plot([], [], 'b.')
 ax.set_ylim([-1.5, 1.5])
@@ -53,9 +53,48 @@ def update(i):
    line.set_data(xdata, ydata)
    return line,
 
-#a = animation.FuncAnimation(fig, update, next, blit = False, interval = 10, repeat = False)
-#plt.show()
-"""
+
+a = animation.FuncAnimation(fig, update, next, blit = False, interval = 10, repeat = False)
+plt.show()"""
+
+fig = plt.figure() 
+ax = plt.axes(xlim=(-5, 5), ylim=(-5, 5)) 
+line, = ax.plot([], [], 'b.') 
+
+# initialization function 
+def init(): 
+	# creating an empty plot/frame 
+	line.set_data([], []) 
+	return line, 
+
+# lists to store x and y axis points 
+xdata, ydata = [], [] 
+
+# animation function 
+def animate(i): 
+	# t is a parameter 
+	t = 0.1*i 
+	
+	# x, y values to be plotted 
+	x = t*np.sin(t) 
+	y = t*np.cos(t) 
+	
+	# appending new points to x, y axes points list 
+	xdata.append(x) 
+	ydata.append(y) 
+	line.set_data(x, y) 
+	return line, 
+	
+# setting a title for the plot 
+plt.title('Creating a growing coil with matplotlib!') 
+# hiding the axis details 
+plt.axis('off') 
+
+# call the animator	 
+anim = animation.FuncAnimation(fig, animate, init_func=init, 
+							frames=500, interval=20, blit=True) 
+    
+plt.show()
 # objective function (ackley function)
 def fn_ackley_function(x,y):
     f = -20*math.exp(-0.2*math.sqrt(0.5*(x**2+y**2))) - math.exp(0.5*(math.cos(2*math.pi*x) + math.cos(2*math.pi*y))) + math.e + 20
@@ -155,6 +194,6 @@ def main_PSO_ackley():
     print("X: ", V_GLOBAL_BEST[0])
     print("Y: ", V_GLOBAL_BEST[1])
 
-main_PSO_ackley()
+#main_PSO_ackley()
 
 #print("FN: ", fn_ackley_function(0.26663023740766967,1.3557306612252518))
