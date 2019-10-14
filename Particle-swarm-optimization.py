@@ -35,8 +35,11 @@ W_REDUCTION = 0.01 # Reduction factor to each iteration
 # Flag to know if the model of the objective function is plotted
 MODEL = 0
 
-# Value between points of the model, if its lower = more quality
+# Value between points of the model, lower = more quality
 MODEL_QUALITY = 0.3
+
+# Speed of the iterations, lower = faster
+SPEED = 100
 
 
 
@@ -159,7 +162,7 @@ def main_PSO_ackley():
         sct.set_data(partX, partY)
         sct.set_3d_properties(partZ)
         W[0] -= W_REDUCTION
-    anim = animation.FuncAnimation(fig, _update_plot, interval = 80)
+    anim = animation.FuncAnimation(fig, _update_plot, interval = SPEED)
     plt.show()
 
 main_PSO_ackley()
