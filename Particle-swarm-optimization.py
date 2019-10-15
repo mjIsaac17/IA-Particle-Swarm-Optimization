@@ -1,3 +1,8 @@
+# IA - Particle Swarm Optimization 
+# By: Isaac Montes Jiménez
+# Created: 10/13/2019
+# Modified: 10/15/2019
+
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 from mpl_toolkits.mplot3d import Axes3D 
